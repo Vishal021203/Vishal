@@ -1,0 +1,249 @@
+import React, { useState } from 'react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Bell, Home, Zap, DollarSign, Settings, AlertTriangle } from 'lucide-react';
+
+const SmartHomeEnergyDashboard = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [timeRange, setTimeRange] = useState('day');
+  
+  // Sample data - in a real app this would come from an API
+  const dailyData = [
+    { time: '12 AM', energy: 1.2, cost: 0.14 },
+    { time: '3 AM', energy: 0.8, cost: 0.10 },
+    { time: '6 AM', energy: 1.5, cost: 0.18 },
+    { time: '9 AM', energy: 2.1, cost: 0.25 },
+    { time: '12 PM', energy: 2.8, cost: 0.34 },
+    { time: '3 PM', energy: 3.2, cost: 0.38 },
+    { time: '6 PM', energy: 4.1, cost: 0.49 },
+    { time: '9 PM', energy: 3.0, cost: 0.36 }
+  ];
+  
+  const weeklyData = [
+    { day: 'Mon', energy: 18.5, cost: 2.22 },
+    { day: 'Tue', energy: 17.3, cost: 2.08 },
+    { day: 'Wed', energy: 19.2, cost: 2.30 },
+    { day: 'Thu', energy: 21.5, cost: 2.58 },
+    { day: 'Fri', energy: 22.1, cost: 2.65 },
+    { day: 'Sat', energy: 23.8, cost: 2.86 },
+    { day: 'Sun', energy: 20.4, cost: 2.45 }
+  ];
+  
+  const deviceData = [
+    { name: 'HVAC', energy: 45 },
+    { name: 'Water Heater', energy: 18 },
+    { name: 'Refrigerator', energy: 12 },
+    { name: 'Lighting', energy: 8 },
+    { name: 'TV & Electronics', energy: 7 },
+    { name: 'Oven & Stove', energy: 5 },
+    { name: 'Washer & Dryer', energy: 3 },
+    { name: 'Other', energy: 2 }
+  ];
+  
+  const alerts = [
+    { id: 1, message: 'Refrigerator using more energy than usual', time: '2 hours ago', severity: 'warning' },
+    { id: 2, message: 'Daily energy budget exceeded', time: '5 hours ago', severity: 'critical' },
+    { id: 3, message: 'HVAC filter needs replacement', time: '1 day ago', severity: 'info' }
+  ];
+  
+  const getData = () => {
+    return timeRange === 'day' ? dailyData : weeklyData;
+  };
+  
+  const getTotalEnergy = () => {
+    const data = getData();
+    return data.reduce((sum, item) => sum + item.energy, 0).toFixed(1);
+  };
+  
+  const getTotalCost = () => {
+    const data = getData();
+    return data.reduce((sum, item) => sum + item.cost, 0).toFixed(2);
+  };
+  
+  const getAlertsCount = () => {
+    return alerts.filter(alert => alert.severity === 'critical' || alert.severity === 'warning').length;
+  };
+  
+  return (
+    <div className="flex flex-col h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white p-4 shadow">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
+            <Home className="text-blue-600 mr-2" />
+            <h1 className="text-xl font-bold">Smart Home Energy Monitor</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Bell className="text-gray-600" />
+              {getAlertsCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                  {getAlertsCount()}
+                </span>
+              )}
+            </div>
+            <Settings className="text-gray-600" />
+          </div>
+        </div>
+      </header>
+      
+      {/* Main Content */}
+      <main className="flex-grow p-4">
+        {/* Top Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white p-4 rounded shadow">
+            <div className="flex items-center mb-2">
+              <Zap className="text-yellow-500 mr-2" />
+              <h2 className="font-semibold">Total Energy</h2>
+            </div>
+            <p className="text-2xl font-bold">{getTotalEnergy()} kWh</p>
+            <p className="text-sm text-gray-500">
+              {timeRange === 'day' ? 'Today' : 'This Week'}
+            </p>
+          </div>
+          
+          <div className="bg-white p-4 rounded shadow">
+            <div className="flex items-center mb-2">
+              <DollarSign className="text-green-500 mr-2" />
+              <h2 className="font-semibold">Total Cost</h2>
+            </div>
+            <p className="text-2xl font-bold">${getTotalCost()}</p>
+            <p className="text-sm text-gray-500">
+              {timeRange === 'day' ? 'Today' : 'This Week'}
+            </p>
+          </div>
+          
+          <div className="bg-white p-4 rounded shadow">
+            <div className="flex items-center mb-2">
+              <AlertTriangle className="text-red-500 mr-2" />
+              <h2 className="font-semibold">Alerts</h2>
+            </div>
+            <p className="text-2xl font-bold">{getAlertsCount()}</p>
+            <p className="text-sm text-gray-500">Active alerts</p>
+          </div>
+        </div>
+        
+        {/* Tabs */}
+        <div className="bg-white rounded shadow mb-6">
+          <div className="border-b">
+            <nav className="flex">
+              <button 
+                onClick={() => setActiveTab('overview')} 
+                className={`px-4 py-2 font-medium ${activeTab === 'overview' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+              >
+                Overview
+              </button>
+              <button 
+                onClick={() => setActiveTab('devices')} 
+                className={`px-4 py-2 font-medium ${activeTab === 'devices' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+              >
+                By Device
+              </button>
+              <button 
+                onClick={() => setActiveTab('alerts')} 
+                className={`px-4 py-2 font-medium ${activeTab === 'alerts' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+              >
+                Alerts
+              </button>
+            </nav>
+          </div>
+          
+          <div className="p-4">
+            {/* Time Range Selector */}
+            <div className="mb-4 flex justify-end">
+              <div className="inline-flex rounded overflow-hidden">
+                <button 
+                  onClick={() => setTimeRange('day')} 
+                  className={`px-3 py-1 ${timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                >
+                  Day
+                </button>
+                <button 
+                  onClick={() => setTimeRange('week')} 
+                  className={`px-3 py-1 ${timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                >
+                  Week
+                </button>
+              </div>
+            </div>
+            
+            {/* Tab Content */}
+            {activeTab === 'overview' && (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={getData()}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey={timeRange === 'day' ? 'time' : 'day'} />
+                    <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                    <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                    <Tooltip />
+                    <Legend />
+                    <Line yAxisId="left" type="monotone" dataKey="energy" stroke="#8884d8" name="Energy (kWh)" />
+                    <Line yAxisId="right" type="monotone" dataKey="cost" stroke="#82ca9d" name="Cost ($)" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+            
+            {activeTab === 'devices' && (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={deviceData}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="energy" name="Energy Usage (%)" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+            
+            {activeTab === 'alerts' && (
+              <div className="space-y-2">
+                {alerts.map(alert => (
+                  <div 
+                    key={alert.id} 
+                    className={`p-3 rounded-lg border ${
+                      alert.severity === 'critical' ? 'border-red-300 bg-red-50' : 
+                      alert.severity === 'warning' ? 'border-yellow-300 bg-yellow-50' : 
+                      'border-blue-300 bg-blue-50'
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <span className="font-medium">{alert.message}</span>
+                      <span className="text-gray-500 text-sm">{alert.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Energy Budget */}
+        <div className="bg-white rounded shadow p-4">
+          <h2 className="font-semibold mb-4">Energy Budget</h2>
+          <div className="mb-2 flex justify-between">
+            <span>Daily Budget: 25 kWh</span>
+            <span>Used: {getTotalEnergy()} kWh ({Math.round((parseFloat(getTotalEnergy()) / 25) * 100)}%)</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div 
+              className={`h-2.5 rounded-full ${parseFloat(getTotalEnergy()) > 25 ? 'bg-red-600' : 'bg-green-600'}`} 
+              style={{ width: `${Math.min(parseFloat(getTotalEnergy()) / 25 * 100, 100)}%` }}
+            ></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default SmartHomeEnergyDashboard;
